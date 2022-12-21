@@ -1,5 +1,8 @@
-﻿using BusinessObject.Models;
+﻿using BasicCRUDProductAPI.Commands;
+using BasicCRUDProductAPI.Queries;
+using BusinessObject.Models;
 using DataAccessObject;
+using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Repository;
@@ -14,18 +17,23 @@ namespace BasicCRUDProductAPI.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductRepository _productRepository;
+        private readonly IMediator _mediator;
 
-        public ProductController(IProductRepository productRepository)
+        public ProductController(IProductRepository productRepository, IMediator mediator)
         {
             _productRepository = productRepository;
+            _mediator = mediator;
         }
         [HttpGet]
         public async Task<ActionResult<ServiceResponse<List<Product>>>> GetProducts()
         {
             try
             {
-                var res = await _productRepository.GetProducts();
-                return StatusCode((int)res.StatusCode, res);
+                var query = new GetProductsQuery();
+                var result = await _mediator.Send(query);
+                return Ok(result);
+                /*var res = await _productRepository.GetProducts();
+                return StatusCode((int)res.StatusCode, res);*/
             }
             catch (Exception ex)
             {
@@ -38,8 +46,11 @@ namespace BasicCRUDProductAPI.Controllers
         {
             try
             {
-                var res = await _productRepository.GetProductById(id);
-                return StatusCode((int)res.StatusCode, res);
+                var query = new GetProductsByIdQuery(id);
+                var result = await _mediator.Send(query);
+                return StatusCode((int)result.StatusCode, result);
+                /*var res = await _productRepository.GetProductById(id);
+                return StatusCode((int)res.StatusCode, res);*/
             }
             catch (Exception ex)
             {
@@ -67,15 +78,17 @@ namespace BasicCRUDProductAPI.Controllers
         /// 
         /// <remarks>
         /// Description: 
-        /// - productId, productName, CategoryId  are required when adding
+        /// - productId, productName, CategoryId, weight  are required when adding
         /// </remarks>
         [HttpPost]
-        public async Task<ActionResult<ServiceResponse<string>>> AddNewProduct(Product product)
+        public async Task<ActionResult<ServiceResponse<string>>> AddNewProduct([FromBody] AddNewProductCommand command)
         {
             try
             {
-                var res = await _productRepository.AddNewProduct(product);
-                return StatusCode((int)res.StatusCode, res);
+                var result = await _mediator.Send(command);
+                return StatusCode((int)result.StatusCode, result);
+                /*var res = await _productRepository.AddNewProduct(product);
+                return StatusCode((int)res.StatusCode, res);*/
             }
             catch (Exception ex)
             {

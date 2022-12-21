@@ -122,7 +122,7 @@ namespace DataAccessObject
         {
             try
             {
-                _dbContext.ChangeTracker.Clear();
+                /*_dbContext.ChangeTracker.Clear();*/
                 _dbContext.Products.Add(product);
                 await _dbContext.SaveChangesAsync();
                 return new ServiceResponse<string>
